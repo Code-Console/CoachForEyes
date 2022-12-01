@@ -41,9 +41,6 @@ class Game {
         this.randQue.sort(compRan);
         this.meshLoading = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 1 ), new THREE.MeshNormalMaterial() );
         this.meshLoading.position.set(0,0,0);
-        // this.scene.add( this.meshLoading );
-
-
         this.gltf_Bat = null;
         this.gltf_Amit = null;
         this.gltf_AmitSit = null;

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>STL viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #c {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .ui-container {
+            display: flex;
+            flex-direction: row;
+            text-align: center;
+        }
+
+        .ui-child {
+            width: 48%;
+            height: 50px;
+            background: radial-gradient(circle, rgba(175, 175, 175, 1) 0%, rgba(125, 125, 125, 1) 100%);
+            margin: 0 1%;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.146.0/three.min.js" integrity="sha512-Wft1v8e5sfJmolWfOyea3DBsf2qHZv6uBKLkvEYNSUo0wImWa9DYZH1lHU5y/UIfQu4xJ3xahqv1X4pvx3cv/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/RGBELoader.js"></script>
+
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <div class="ui-container">
+        <div class="ui-child">
+            <div>
+                PreTreatment
+            </div>
+            <div class="sub-child">
+                Mandibular
+                <input type="checkbox" id="preMandibular" name="preMandibular" value="preMandibular" checked onchange="handleClick()">
+                Maxillary
+                <input type="checkbox" id="preMaxillary" name="preMaxillary" value="preMaxillary" checked onchange="handleClick()">
+            </div>
+        </div>
+        <div class="ui-child">
+            <div>
+                PostTreatment
+            </div>
+            <div class="sub-child">
+                Mandibular
+                <input type="checkbox" id="postMandibular" name="postMandibular" value="postMandibular" onchange="handleClick()">
+                Maxillary
+                <input type="checkbox" id="postMaxillary" name="postMaxillary" value="postMaxillary" onchange="handleClick()">
+            </div>
+        </div>
+    </div>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const canvas = document.querySelector('#c');
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true
+        });
+        let preMandibularMesh;
+        let preMaxillaryMesh;
+        let postMandibularMesh;
+        let postMaxillaryMesh;
+        const handleClick = () => {
+            const preMandibular = document.querySelector('#preMandibular').checked;
+            const preMaxillary = document.querySelector('#preMaxillary').checked;
+            const postMandibular = document.querySelector('#postMandibular').checked;
+            const postMaxillary = document.querySelector('#postMaxillary').checked;
+
+            preMandibularMesh.visible = preMandibular;
+            preMaxillaryMesh.visible = preMaxillary;
+            postMandibularMesh.visible = postMandibular;
+            postMaxillaryMesh.visible = postMaxillary;
+
+            console.log("", preMandibular, preMaxillary, postMandibular, postMaxillary);
+        }
+
+        function addShadowedLight(x, y, z, color, intensity) {
+            const directionalLight = new THREE.DirectionalLight(color, intensity);
+            directionalLight.position.set(x, y, z);
+            scene.add(directionalLight);
+            directionalLight.castShadow = true;
+            const d = 1;
+            directionalLight.shadow.camera.left = -d;
+            directionalLight.shadow.camera.right = d;
+            directionalLight.shadow.camera.top = d;
+            directionalLight.shadow.camera.bottom = -d;
+            directionalLight.shadow.camera.near = 1;
+            directionalLight.shadow.camera.far = 4;
+            directionalLight.shadow.bias = -0.002;
+        }
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x424242, 1);
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.shadowMap.enabled = true;
+        const onWindowResize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+
+        window.addEventListener('resize', onWindowResize, false);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 1, 5);
+        controls.update();
+        const modelBackgroundPath = './assets/env.hdr';
+        const rgbeLoader = new THREE.RGBELoader();
+        rgbeLoader.load(
+            modelBackgroundPath,
+            (texture) => {
+                if (renderer && scene) {
+                    let pmremGenerator = new THREE.PMREMGenerator(renderer);
+                    pmremGenerator.compileEquirectangularShader();
+                    const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                    pmremGenerator = undefined;
+                    scene.environment = envMap;
+                }
+            },
+            undefined,
+            undefined
+        )
+        const loader = new THREE.STLLoader();
+        loader.load('./assets/PostTreatment_Mandibular.stl', function(geometry) {
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0x111111,
+
+                flatShading: true,
+                smoothShading: true
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.05, 0.05, 0.05);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            postMandibularMesh = mesh;
+            postMandibularMesh.visible = false;
+        });
+        loader.load('./assets/PostTreatment_Maxillary.stl', function(geometry) {
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0x111111,
+
+                flatShading: true,
+                smoothShading: true
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.05, 0.05, 0.05);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            postMaxillaryMesh = mesh;
+            postMaxillaryMesh.visible = false;
+        });
+        loader.load('./assets/PreTreatment_Mandibular.stl', function(geometry) {
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0x111111,
+
+                flatShading: true,
+                smoothShading: true
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.05, 0.05, 0.05);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            preMandibularMesh = mesh;
+
+        });
+        loader.load('./assets/PreTreatment_Maxillary.stl', function(geometry) {
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0x111111,
+
+                flatShading: true,
+                smoothShading: true
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.05, 0.05, 0.05);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            preMaxillaryMesh = mesh;
+        });
+
+        addShadowedLight(1, 1, 1, 0xffffff, .5);
+        const light = new THREE.AmbientLight(0xffffff, .5); // soft white light
+        scene.add(light);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, .51); // soft white light
+        scene.add(directionalLight);
+
+        let counter = 0;
+
+        function animate() {
+            counter += 1;
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
