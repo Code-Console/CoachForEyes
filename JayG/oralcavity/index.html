@@ -35,7 +35,25 @@
         height: 100%;
         z-index: -1;
       }
-
+      .parameter-container {
+        display: flex;
+        flex-direction: row;
+        text-align: center;
+      }
+      .para-child {
+        width: 30%;
+        background: radial-gradient(
+          circle,
+          rgb(226 196 185) 0%,
+          rgb(224 220 183) 100%
+        );
+        display: flex;
+        flex-direction: column;
+        margin: 10px 1.5%;
+        align-items: center;
+        border-radius: 4px;
+        padding: 4px;
+      }
       .ui-container {
         display: flex;
         flex-direction: row;
@@ -160,11 +178,79 @@
         </div>
       </div>
     </div>
+    <div class="parameter-container">
+      <div class="para-child">
+        <span id="modelColorCode">Model Color #ffffff</span>
+        <input
+          type="color"
+          id="modelColorPicker"
+          value="#ffffff"
+          style="width: 85%"
+        />
+      </div>
+      <div class="para-child">
+        <span id="lightColorCode">Light Color #ffffff</span>
+        <input
+          type="color"
+          id="lightColorPicker"
+          value="#ffffff"
+          style="width: 85%"
+        />
+      </div>
+      <div class="para-child">
+        Light Intensity
+        <input
+          type="number"
+          id="lightIntensity"
+          onchange="clickIntensity()"
+          value=".5"
+          style="width: 85%"
+        />
+      </div>
+    </div>
 
     <div id="loader" class="loader"></div>
     <div id="progress" class="progress">0%</div>
 
     <script>
+      const changeModelColor = (evt) => {
+        const selectedColor = evt.currentTarget.value;
+        modelColorCode.innerHTML = "Model Color " + selectedColor;
+        material.color = new THREE.Color(selectedColor);
+      };
+      const changeLightColor = (evt) => {
+        const selectedColor = evt.currentTarget.value;
+        lightColorCode.innerHTML = "Light Color " + selectedColor;
+
+        directionalFLight.color = new THREE.Color(selectedColor);
+        directionalBLight.color = new THREE.Color(selectedColor);
+        intensity.color = new THREE.Color(selectedColor);
+      };
+      const clickIntensity = () => {
+        console.log(lightIntensity.value);
+        directionalFLight.intensity = lightIntensity.value;
+        directionalBLight.intensity = lightIntensity.value;
+        light.intensity = lightIntensity.value;
+      };
+      let directionalFLight;
+      let directionalBLight;
+      let light;
+      const modelColorCode = document.querySelector("#modelColorCode");
+      const lightColorCode = document.querySelector("#lightColorCode");
+      const modelColorPicker = document.getElementById("modelColorPicker");
+      const lightColorPicker = document.getElementById("lightColorPicker");
+      const lightIntensity = document.getElementById("lightIntensity");
+      modelColorPicker.addEventListener("input", changeModelColor);
+      lightColorPicker.addEventListener("input", changeLightColor);
+      lightIntensity.addEventListener("keyup", clickIntensity);
+
+      const material = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        specular: 0x111111,
+        flatShading: true,
+        smoothShading: true,
+      });
+
       let isObjectsLoaded = false;
       let preMandibularMesh;
       let preMaxillaryMesh;
@@ -279,6 +365,7 @@
           directionalLight.shadow.camera.near = 1;
           directionalLight.shadow.camera.far = 4;
           directionalLight.shadow.bias = -0.002;
+          return directionalLight;
         }
         const onWindowResize = () => {
           //   camera.aspect = aspect;
@@ -319,13 +406,12 @@
         );
         const loader = new THREE.STLLoader(manager);
         loader.load(postMandibularUrl, function (geometry) {
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            specular: 0x111111,
-
-            flatShading: true,
-            smoothShading: true,
-          });
+          // const material = new THREE.MeshPhongMaterial({
+          //   color: 0xffffff,
+          //   specular: 0x111111,
+          //   flatShading: true,
+          //   smoothShading: true,
+          // });
           const mesh = new THREE.Mesh(geometry, material);
           mesh.scale.set(modelScale, modelScale, modelScale);
           mesh.castShadow = true;
@@ -335,13 +421,12 @@
           postMandibularMesh.visible = false;
         });
         loader.load(postMaxillaryUrl, function (geometry) {
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            specular: 0x111111,
-
-            flatShading: true,
-            smoothShading: true,
-          });
+          // const material = new THREE.MeshPhongMaterial({
+          //   color: 0xffffff,
+          //   specular: 0x111111,
+          //   flatShading: true,
+          //   smoothShading: true,
+          // });
           const mesh = new THREE.Mesh(geometry, material);
           mesh.scale.set(modelScale, modelScale, modelScale);
           mesh.castShadow = true;
@@ -351,13 +436,12 @@
           postMaxillaryMesh.visible = false;
         });
         loader.load(preMandibularUrl, function (geometry) {
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            specular: 0x111111,
-
-            flatShading: true,
-            smoothShading: true,
-          });
+          // const material = new THREE.MeshPhongMaterial({
+          //   color: 0xffffff,
+          //   specular: 0x111111,
+          //   flatShading: true,
+          //   smoothShading: true,
+          // });
           const mesh = new THREE.Mesh(geometry, material);
           mesh.scale.set(modelScale, modelScale, modelScale);
           mesh.castShadow = true;
@@ -366,13 +450,12 @@
           preMandibularMesh = mesh;
         });
         loader.load(preMaxillaryUrl, function (geometry) {
-          const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            specular: 0x111111,
-
-            flatShading: true,
-            smoothShading: true,
-          });
+          // const material = new THREE.MeshPhongMaterial({
+          //   color: 0xffffff,
+          //   specular: 0x111111,
+          //   flatShading: true,
+          //   smoothShading: true,
+          // });
           const mesh = new THREE.Mesh(geometry, material);
           mesh.scale.set(modelScale, modelScale, modelScale);
           mesh.castShadow = true;
@@ -381,9 +464,9 @@
           preMaxillaryMesh = mesh;
         });
 
-        addShadowedLight(0, 0, 10, 0xffffff, 0.5);
-        addShadowedLight(0, 0, -10, 0xffffff, 0.5);
-        const light = new THREE.AmbientLight(0xffffff, 0.5);
+        directionalFLight = addShadowedLight(0, 0, 10, 0xffffff, 0.5);
+        directionalBLight = addShadowedLight(0, 0, -10, 0xffffff, 0.5);
+        light = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(light);
         let counter = 0;
 
