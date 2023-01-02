@@ -1,4 +1,5 @@
 /* global $, JitsiMeetJS */
+//"//meet-uat.inspify.io//http-bind"
 const conference = "conference";
 const domain = "146.190.118.136";
 const options = {
