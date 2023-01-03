@@ -5,7 +5,7 @@ const envHDRUrl = `${assetsBaseUrl}Games/oralcavity/assets/env.hdr`;
 const auditoriumGLB = `${assetsBaseUrl}3D/auditorium_open.glb`;
 const tileUrl = `${assetsBaseUrl}3D/tile.jpg`;
 const videoTextures = [];
-let scene, camera, renderer;
+let scene, camera, renderer, meshGLB;
 const addShadowedLight = (x, y, z, color, intensity) => {
   const directionalLight = new THREE.DirectionalLight(color, intensity);
   directionalLight.position.set(x, y, z);
@@ -118,7 +118,9 @@ const aInit = () => {
     antialias: true,
     alpha: true,
   });
+  scene.background = 0xff0000;
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 1);
   document.body.appendChild(renderer.domElement);
   camera.position.z = 5;
   for (let i = 0; i < 3; i++) {
@@ -182,10 +184,7 @@ const aInit = () => {
     meshFloorHall.material.needUpdate = true;
     const chair = getChair();
     gltf.scene.add(chair);
-    const video = document.getElementById("localVideo1");
-    if (video) {
-      videoTextures[0].map = new THREE.VideoTexture(video);
-    }
+
     const geometry = new THREE.PlaneGeometry(7.4, 3.8);
     const plane = new THREE.Mesh(geometry, videoTextures[0]);
     const plane2 = new THREE.Mesh(geometry, videoTextures[1]);
@@ -199,6 +198,10 @@ const aInit = () => {
     gltf.scene.add(plane2);
     gltf.scene.add(plane3);
     gltf.scene.position.set(0, 0, 12.5);
+    plane.name = "videoPlane1";
+    plane2.name = "videoPlane2";
+    plane3.name = "videoPlane3";
+    meshGLB = gltf.scene;
   });
 
   function animate() {
@@ -206,4 +209,56 @@ const aInit = () => {
     renderer.render(scene, camera);
   }
   animate();
+
+  setTimeout(() => {
+    // setVideo();
+  }, 10000);
+};
+
+const setVideo = () => {
+  const objKey = Object.keys(remoteTracks);
+  var video = [];
+  objKey.forEach((element) => {
+    const v = document.getElementById(`${element}video${2}`);
+    if (v) {
+      video.push({ track: v, id: `${element}video${2}` });
+    }
+  });
+  if (video.length > 0) {
+    const videoPlane2 = meshGLB.getObjectByName("videoPlane2");
+    const vText = new THREE.VideoTexture(video[0].track);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: vText,
+    });
+    videoPlane2.material = mat;
+    videoTextures[1].map = vText;
+    videoPlane2.material.needUpdate = true;
+    videoPlane2.material.id = video[0].id;
+  }
+  if (video.length > 1) {
+    const videoPlane3 = meshGLB.getObjectByName("videoPlane3");
+    const vText = new THREE.VideoTexture(video[1].track);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: vText,
+    });
+    videoPlane3.material = mat;
+    videoTextures[2].map = vText;
+    videoPlane3.material.needUpdate = true;
+    videoPlane3.material.id = video[1].id;
+  }
+  const localVideo1 = document.getElementById("localVideo1");
+  if (localVideo1 && videoTextures.length > 0) {
+    const videoPlane1 = meshGLB.getObjectByName("videoPlane1");
+    const vText = new THREE.VideoTexture(localVideo1);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: vText,
+    });
+    videoPlane1.material = mat;
+    videoTextures[0].map = vText;
+    videoPlane1.material.needUpdate = true;
+    videoPlane1.material.id = "localVideo1";
+  }
 };
