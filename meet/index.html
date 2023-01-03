@@ -22,11 +22,15 @@
         right: 0;
         width: 100%;
         height: 100%;
-        z-index: -1;
+        /* z-index: -1; */
+      }
+      #video-container{
+        z-index: -10;
       }
     </style>
   </head>
   <body>
+    <div class="video-container" id="video-ele"></div>
     <canvas id="c"></canvas>
     <a href="#" onclick="unload()">Unload</a>
     <a href="#" onclick="switchVideo()">switchVideo</a>
@@ -40,6 +44,7 @@
     <script>
       window.onload = () => {
         aInit();
+        initJitsi();
       };
     </script>
     <!-- <video id="localVideo" autoplay="true"></video> -->
