@@ -1,11 +1,15 @@
 /* global $, JitsiMeetJS */
 //"//meet-uat.inspify.io//http-bind"
-const conference = "conference";
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const confID = urlParams.get("meeting");
+
+const conference = confID || "conference";
 const domain = "146.190.118.136";
 const options = {
   hosts: {
     domain: domain,
-    muc: `${conference}.${domain}`,
+    muc: `conference.${domain}`,
   },
   bosh: `//${domain}//http-bind`,
   externalConnectUrl: `https://${domain}/http-pre-bind`,
@@ -56,13 +60,16 @@ function onLocalTracks(tracks) {
         console.log(`track audio output device was changed to ${deviceId}`)
     );
     if (localTracks[i].getType() === "video") {
-      $("#video-ele").append(`<video autoplay='1' id='localVideo${i}' />`);
+      $("#video-ele").append(`<video autoplay='1' id='localVideo${i}' class='video-back'/>`);
       localTracks[i].attach($(`#localVideo${i}`)[0]);
     } else {
       $("#video-ele").append(
         `<audio autoplay='1' muted='true' id='localAudio${i}' />`
       );
       localTracks[i].attach($(`#localAudio${i}`)[0]);
+      setTimeout(() => {
+        setVideo();
+      }, 100);
     }
     if (isJoined) {
       room.addTrack(localTracks[i]);
@@ -104,11 +111,17 @@ function onRemoteTrack(track) {
   const id = participant + track.getType() + idx;
 
   if (track.getType() === "video") {
-    $("body").append(`<video autoplay='1' id='${participant}video${idx}' />`);
+    $("#video-ele").append(
+      `<video autoplay='1' id='${participant}video${idx}' class='video-back'/>`
+    );
   } else {
-    $("body").append(`<audio autoplay='1' id='${participant}audio${idx}' />`);
+    $("#video-ele").append(
+      `<audio autoplay='1' id='${participant}audio${idx}' />`
+    );
   }
-  setVideo();
+  setTimeout(() => {
+    setVideo();
+  }, 300);
   track.attach($(`#${id}`)[0]);
 }
 
@@ -143,11 +156,17 @@ function onUserLeft(id) {
  * That function is called when connection is established successfully
  */
 function onConnectionSuccess() {
-  console.log("~~~a~~", "yogeshbangar");
+  console.error("~~~a~~", conference);
   room = connection.initJitsiConference(conference, confOptions);
   room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
   room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track) => {
-    console.log(`track removed!!!${track}`);
+    delete remoteTracks[track.getParticipantId()];
+    console.error(
+      remoteTracks,
+      `track removed!!!${track}`,
+      track.getParticipantId()
+    );
+    setVideo({ remove: track.getParticipantId() });
   });
   room.on(JitsiMeetJS.events.conference.CONFERENCE_JOINED, onConferenceJoined);
   room.on(JitsiMeetJS.events.conference.USER_JOINED, (id) => {

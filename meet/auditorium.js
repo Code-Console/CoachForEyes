@@ -121,7 +121,7 @@ const aInit = () => {
   });
   scene.background = 0xff0000;
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000, 1);
+  renderer.setClearColor(0x222222, 1);
   document.body.appendChild(renderer.domElement);
   camera.position.z = 5;
   for (let i = 0; i < 3; i++) {
@@ -233,7 +233,7 @@ const aInit = () => {
   }, 10000);
 };
 
-const setVideo = () => {
+const setVideo = (obj) => {
   const objKey = Object.keys(remoteTracks);
   var video = [];
   objKey.forEach((element) => {
@@ -257,10 +257,7 @@ const setVideo = () => {
   if (video.length > 1) {
     const videoPlane3 = meshGLB.getObjectByName("videoPlane3");
     const vText = new THREE.VideoTexture(video[1].track);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      map: vText,
-    });
+    const mat = new THREE.MeshBasicMaterial({ map: vText });
     videoPlane3.material = mat;
     videoTextures[2].map = vText;
     videoPlane3.material.needUpdate = true;
@@ -270,13 +267,16 @@ const setVideo = () => {
   if (localVideo1 && videoTextures.length > 0) {
     const videoPlane1 = meshGLB.getObjectByName("videoPlane1");
     const vText = new THREE.VideoTexture(localVideo1);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      map: vText,
-    });
+    const mat = new THREE.MeshBasicMaterial({ map: vText });
     videoPlane1.material = mat;
     videoTextures[0].map = vText;
     videoPlane1.material.needUpdate = true;
     videoPlane1.material.id = "localVideo1";
+  }
+  if(obj?.remove){
+    const eleVideo = document.getElementById(`${obj?.remove}video${2}`);
+    eleVideo?.remove(); 
+    const eleAudio = document.getElementById(`${obj?.remove}audio${1}`);
+    eleAudio?.remove(); 
   }
 };
