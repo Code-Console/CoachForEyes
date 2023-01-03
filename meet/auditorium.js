@@ -4,6 +4,7 @@ const height = window.innerHeight;
 const envHDRUrl = `${assetsBaseUrl}Games/oralcavity/assets/env.hdr`;
 const auditoriumGLB = `${assetsBaseUrl}3D/auditorium_open.glb`;
 const tileUrl = `${assetsBaseUrl}3D/tile.jpg`;
+const tile2Url = `${assetsBaseUrl}3D/title2.jpg`;
 const videoTextures = [];
 let scene, camera, renderer, meshGLB;
 const addShadowedLight = (x, y, z, color, intensity) => {
@@ -126,7 +127,7 @@ const aInit = () => {
   for (let i = 0; i < 3; i++) {
     videoTextures.push(
       new THREE.MeshBasicMaterial({
-        color: 0xff00ff,
+        color: 0x999999,
       })
     );
   }
@@ -176,15 +177,31 @@ const aInit = () => {
   tileTex.wrapS = THREE.RepeatWrapping;
   tileTex.wrapT = THREE.RepeatWrapping;
   tileTex.repeat.set(4, 4);
+  const tile2Tex = textureLoader.load(tile2Url);
+  tile2Tex.wrapT = THREE.RepeatWrapping;
+  tile2Tex.wrapS = THREE.RepeatWrapping;
+  tile2Tex.repeat.set(4, 4);
+
   const loader = new THREE.GLTFLoader(manager);
   loader.load(auditoriumGLB, (gltf) => {
     scene.add(gltf.scene);
     const meshFloorHall = gltf.scene.getObjectByName("FloorHall");
+
     meshFloorHall.material.map = tileTex;
     meshFloorHall.material.needUpdate = true;
     const chair = getChair();
     gltf.scene.add(chair);
-
+    gltf.scene.traverse((object) => {
+      if (!object["isMesh"]) return;
+      if (object["isMesh"] && object["material"].isMaterial) {
+        if (object.name === "chair_rings_2") {
+          object.material.map = tile2Tex;
+        }
+        if (object.name === "stairs_centre_platfoform") {
+          object.material.color = new THREE.Color(0x555555);
+        }
+      }
+    });
     const geometry = new THREE.PlaneGeometry(7.4, 3.8);
     const plane = new THREE.Mesh(geometry, videoTextures[0]);
     const plane2 = new THREE.Mesh(geometry, videoTextures[1]);
@@ -202,6 +219,7 @@ const aInit = () => {
     plane2.name = "videoPlane2";
     plane3.name = "videoPlane3";
     meshGLB = gltf.scene;
+    console.log("~~~~~object.name~~~~~~~~~", meshGLB);
   });
 
   function animate() {
