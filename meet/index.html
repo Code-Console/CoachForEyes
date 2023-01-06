@@ -2,48 +2,86 @@
 <html>
   <head lang="en">
     <meta charset="UTF-8" />
-    <title></title>
+    <title>Metaverse Meet</title>
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/three@0.146.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.146.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/RGBELoader.js"></script>
     <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://146.190.118.136/libs/lib-jitsi-meet.min.js"></script>
-    
+    <script src="lib-jitsi-meet.min.js"></script>
     <script src="example.js"></script>
     <script src="auditorium.js"></script>
     <script src="Basic.js"></script>
-    <style>
-      #c {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        /* z-index: -1; */
-      }
-      #video-container{
-        z-index: -10;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        max-width: 800px;
-        max-height: 800px;
-        overflow: hidden;
-      }
-      .video-back{
-        width: 100px;
-        height: auto;
-      }
-    </style>
   </head>
   <body>
     <div class="video-container" id="video-ele"></div>
     <canvas id="c"></canvas>
     <a href="#" onclick="unload()">Unload</a>
     <a href="#" onclick="switchVideo()">switchVideo</a>
+    <div id="p-parent">
+      <div class="progress" id="loading">
+        <div class="progress-value"></div>
+      </div>
+      <button class="start-btn" id="join-meeting">Start</button>
+    </div>
+    <div id="meeting-ui">
+      <div id="mute-but" class="meeting-btn">
+        <svg
+          width="71"
+          height="70"
+          viewBox="0 0 71 70"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect width="70" height="70" transform="translate(0.426758)"></rect>
+          <path
+            d="M50.4167 34.4209C50.4167 33.6922 49.8261 33.1018 49.0976 33.1018C48.3691 33.1018 47.7785 33.6922 47.7785 34.4209C47.7785 41.6278 41.9152 47.4911 34.7083 47.4911C27.5015 47.4911 21.6382 41.6276 21.6382 34.4209C21.6382 33.6922 21.0476 33.1018 20.3191 33.1018C19.5906 33.1018 19 33.6922 19 34.4209C19 42.6384 25.3426 49.4011 33.3892 50.0733V54.7405H27.5136C26.7851 54.7405 26.1945 55.3309 26.1945 56.0596C26.1945 56.7882 26.7851 57.3787 27.5136 57.3787H41.9029C42.6314 57.3787 43.222 56.7882 43.222 56.0596C43.222 55.3309 42.6314 54.7405 41.9029 54.7405H36.0273V50.0733C44.0739 49.4011 50.4167 42.6384 50.4167 34.4209Z"
+            fill="white"
+          ></path>
+          <path
+            d="M34.7085 42.934C39.403 42.934 43.2223 39.1148 43.2223 34.4204V21.8886C43.2223 17.1942 39.403 13.375 34.7085 13.375C30.0141 13.375 26.1948 17.1942 26.1948 21.8886V34.4204C26.1948 39.115 30.0141 42.934 34.7085 42.934ZM28.833 21.8886C28.833 18.6489 31.4688 16.0132 34.7085 16.0132C37.9483 16.0132 40.5841 18.6489 40.5841 21.8886V34.4204C40.5841 37.6601 37.9483 40.2958 34.7085 40.2958C31.4688 40.2958 28.833 37.6601 28.833 34.4204V21.8886V21.8886Z"
+            fill="white"
+          ></path>
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M47.3745 12.1768C48.0364 12.5492 48.2712 13.3876 47.8989 14.0495L23.1471 58.0527C22.7748 58.7146 21.9363 58.9494 21.2744 58.577C20.6125 58.2047 20.3778 57.3663 20.7501 56.7044L45.5019 12.7012C45.8742 12.0393 46.7126 11.8045 47.3745 12.1768Z"
+            fill="white"
+            style="display: none"
+            id="mute-line"
+          ></path>
+        </svg>
+      </div>
+      <div class="divider"></div>
+      <div class="meeting-btn" id="end-but">
+        <svg
+          width="71"
+          height="70"
+          viewBox="0 0 71 70"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect width="70" height="70" transform="translate(0.573242)"></rect>
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M41.8363 16.2971C42.0173 15.7027 42.6459 15.3676 43.2402 15.5486C52.3533 18.3237 59 26.5924 59 36.4004C59 48.5 48.8934 58.2498 36.5 58.2498C24.1066 58.2498 14 48.5 14 36.4004C14 27.419 19.5757 19.7262 27.5112 16.3646C28.0833 16.1223 28.7435 16.3896 28.9859 16.9617C29.2282 17.5338 28.9609 18.194 28.3888 18.4364C21.2259 21.4707 16.25 28.3852 16.25 36.4004C16.25 47.1923 25.2832 55.9998 36.5 55.9998C47.7168 55.9998 56.75 47.1923 56.75 36.4004C56.75 27.6492 50.8159 20.2076 42.5848 17.701C41.9904 17.52 41.6553 16.8915 41.8363 16.2971Z"
+            fill="#D14545"
+          ></path>
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M35.373 11C35.9944 11 36.498 11.5037 36.498 12.125V34.625C36.498 35.2463 35.9944 35.75 35.373 35.75C34.7517 35.75 34.248 35.2463 34.248 34.625V12.125C34.248 11.5037 34.7517 11 35.373 11Z"
+            fill="#D14545"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <div id="meeting-end">
+      <h1>Thanks for the Meeting</h1>
+    </div>
     <div id="audioOutputSelectWrapper" style="display: none">
       Change audio output device
       <select
@@ -54,10 +92,66 @@
     <script>
       window.onload = () => {
         aInit();
-        initJitsi();
       };
+      $("#join-meeting").click(() => {
+        $("#p-parent").remove();
+        $("#meeting-ui").css("z-index", "1");
+        //
+        getUserMedia()
+          .then(() => {
+            initJitsi();
+          })
+          .catch((e) => {
+            initJitsi();
+          });
+      });
+      $("#mute-but").click(() => {
+        const audio = localTracks.find((t) => t.getType() === "audio");
+        
+        if (audio?.isMuted()) {
+          audio?.unmute();
+          $("#mute-line").css("display", "none");
+          $("#mute-but").css("background-color", "#0000");
+        } else {
+          audio?.mute();
+          $("#mute-line").css("display", "block");
+          $("#mute-but").css("background-color", "red");
+        }
+      });
+      $("#end-but").click(() => {
+        console.error(room, "~~~~~room~~~~~~~~~~");
+        room?.leave().then(() => {
+          $("#meeting-ui").css("z-index", "0");
+          $("#meeting-end").css("display", "flex");
+        }).catch(e=>console.error(e,'end-but'));
+      });
+
+      const getUserMedia = () => {
+        if (navigator?.mediaDevices?.getUserMedia) {
+          return navigator.mediaDevices
+            .getUserMedia({ audio: true, video: true })
+            .then(() => ({
+              audio: DevicePermissionStatus.GRANTED,
+              video: DevicePermissionStatus.GRANTED,
+            }))
+            .catch(() => {
+              console.log("DEBUG:: Can not get camera permission");
+              return navigator.mediaDevices
+                .getUserMedia({
+                  audio: true,
+                  video: false,
+                })
+                .then(() => ({
+                  audio: DevicePermissionStatus.GRANTED,
+                  video: DevicePermissionStatus.REJECTED,
+                }));
+            });
+        }
+        return Promise.reject(
+          new Error("navigator.mediaDevices.getUserMedia is not available")
+        );
+      };
+      getUserMedia();
     </script>
-    <!-- <video id="localVideo" autoplay="true"></video> -->
-    <!--<audio id="localAudio" autoplay="true" muted="true"></audio>-->
   </body>
 </html>

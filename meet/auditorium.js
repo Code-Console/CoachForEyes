@@ -1,12 +1,13 @@
 const assetsBaseUrl = "https://hututusoftwares.com/";
 const width = window.innerWidth;
 const height = window.innerHeight;
-const envHDRUrl = `${assetsBaseUrl}Games/oralcavity/assets/env.hdr`;
+const envHDRUrl = `${assetsBaseUrl}3D/Skybox_baseColor_sm.hdr`;
 const auditoriumGLB = `${assetsBaseUrl}3D/auditorium_open.glb`;
 const tileUrl = `${assetsBaseUrl}3D/tile.jpg`;
 const tile2Url = `${assetsBaseUrl}3D/title2.jpg`;
 const videoTextures = [];
 let scene, camera, renderer, meshGLB;
+const loading = { inc: 10, loaded: 0 };
 const addShadowedLight = (x, y, z, color, intensity) => {
   const directionalLight = new THREE.DirectionalLight(color, intensity);
   directionalLight.position.set(x, y, z);
@@ -29,7 +30,7 @@ const getChair = () => {
   const cubeB = cubeA.clone();
   const sit = new THREE.Mesh(
     new THREE.BoxGeometry(1, 0.1, 1),
-    new THREE.MeshPhongMaterial({ color: 0xba8c63 })
+    new THREE.MeshPhongMaterial({ color: 0xf0b581 })
   );
   const sitRest = cubeA.clone();
   const dist = 0.5;
@@ -158,6 +159,7 @@ const aInit = () => {
         const envMap = pmremGenerator.fromEquirectangular(texture).texture;
         pmremGenerator = undefined;
         scene.environment = envMap;
+        scene.background = envMap;
       }
     },
     undefined,
@@ -171,6 +173,8 @@ const aInit = () => {
   const manager = new THREE.LoadingManager();
   manager.onLoad = function () {
     console.log("Loading complete!");
+    $("#loading").remove();
+    $("#join-meeting").css("display", "block");
   };
   const textureLoader = new THREE.TextureLoader(manager);
   const tileTex = textureLoader.load(tileUrl);
@@ -183,51 +187,63 @@ const aInit = () => {
   tile2Tex.repeat.set(4, 4);
 
   const loader = new THREE.GLTFLoader(manager);
-  loader.load(auditoriumGLB, (gltf) => {
-    scene.add(gltf.scene);
-    const meshFloorHall = gltf.scene.getObjectByName("FloorHall");
+  loader.load(
+    auditoriumGLB,
+    (gltf) => {
+      scene.add(gltf.scene);
+      const meshFloorHall = gltf.scene.getObjectByName("FloorHall");
 
-    meshFloorHall.material.map = tileTex;
-    meshFloorHall.material.needUpdate = true;
-    const chair = getChair();
-    gltf.scene.add(chair);
-    gltf.scene.traverse((object) => {
-      if (!object["isMesh"]) return;
-      if (object["isMesh"] && object["material"].isMaterial) {
-        if (object.name === "chair_rings_2") {
-          object.material.map = tile2Tex;
+      meshFloorHall.material.map = tileTex;
+      meshFloorHall.material.needUpdate = true;
+      const chair = getChair();
+      gltf.scene.add(chair);
+      gltf.scene.traverse((object) => {
+        if (!object["isMesh"]) return;
+        if (object["isMesh"] && object["material"].isMaterial) {
+          if (object.name === "chair_rings_2") {
+            object.material.map = tile2Tex;
+          }
+          if (object.name === "stairs_centre_platfoform") {
+            object.material.color = new THREE.Color(0x555555);
+          }
         }
-        if (object.name === "stairs_centre_platfoform") {
-          object.material.color = new THREE.Color(0x555555);
-        }
-      }
-    });
-    const geometry = new THREE.PlaneGeometry(7.4, 3.8);
-    const plane = new THREE.Mesh(geometry, videoTextures[0]);
-    const plane2 = new THREE.Mesh(geometry, videoTextures[1]);
-    const plane3 = new THREE.Mesh(geometry, videoTextures[2]);
-    plane.position.set(-7.2, 1.2, -20.5);
-    plane.rotation.y = 0.4;
-    plane2.position.set(0, 1.2, -22);
-    plane3.position.set(7.2, 1.2, -20.5);
-    plane3.rotation.y = -0.4;
-    gltf.scene.add(plane);
-    gltf.scene.add(plane2);
-    gltf.scene.add(plane3);
-    gltf.scene.position.set(0, 0, 12.5);
-    plane.name = "videoPlane1";
-    plane2.name = "videoPlane2";
-    plane3.name = "videoPlane3";
-    meshGLB = gltf.scene;
-    console.log("~~~~~object.name~~~~~~~~~", meshGLB);
-  });
+      });
+      const geometry = new THREE.PlaneGeometry(7.4, 3.8);
+      const plane = new THREE.Mesh(geometry, videoTextures[0]);
+      const plane2 = new THREE.Mesh(geometry, videoTextures[1]);
+      const plane3 = new THREE.Mesh(geometry, videoTextures[2]);
+      plane.position.set(-7.2, 1.2, -20.5);
+      plane.rotation.y = 0.4;
+      plane2.position.set(0, 1.2, -22);
+      plane3.position.set(7.2, 1.2, -20.5);
+      plane3.rotation.y = -0.4;
+      gltf.scene.add(plane);
+      gltf.scene.add(plane2);
+      gltf.scene.add(plane3);
+      gltf.scene.position.set(0, 0, 12.5);
+      plane.name = "videoPlane1";
+      plane2.name = "videoPlane2";
+      plane3.name = "videoPlane3";
+      meshGLB = gltf.scene;
+    },
+    (xhr) => {
+      loading.loaded = (xhr.loaded / xhr.total) * 100;
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    }
+  );
 
   function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    if (loading.inc < loading.loaded) {
+      document.documentElement.style.setProperty(
+        "--load-end-width",
+        loading.inc + "%"
+      );
+      loading.inc++;
+    }
   }
   animate();
-
   setTimeout(() => {
     // setVideo();
   }, 10000);
@@ -273,10 +289,10 @@ const setVideo = (obj) => {
     videoPlane1.material.needUpdate = true;
     videoPlane1.material.id = "localVideo1";
   }
-  if(obj?.remove){
+  if (obj?.remove) {
     const eleVideo = document.getElementById(`${obj?.remove}video${2}`);
-    eleVideo?.remove(); 
+    eleVideo?.remove();
     const eleAudio = document.getElementById(`${obj?.remove}audio${1}`);
-    eleAudio?.remove(); 
+    eleAudio?.remove();
   }
 };
