@@ -354,10 +354,7 @@ const sendMessage = () => {
     room.sendEndpointMessage("", {
       msg: msgStr,
     });
-    for (let i = 0; i < 10; i++) {
-      setMsgElement("you", msgStr);
-    }
-    // $("html, body").animate({ scrollTop: $("#chatPanel").scrollTop() }, 1000);
+    setMsgElement("you", msgStr);
     var $target = $("#chatPanel");
     $target.animate({ scrollTop: $target.height() }, 1000);
   }
