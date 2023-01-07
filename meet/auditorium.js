@@ -258,8 +258,10 @@ const setVideo = (obj) => {
       video.push({ track: v, id: `${element}video${2}` });
     }
   });
+  console.error("setVideo", video);
+  const videoPlane2 = meshGLB.getObjectByName("videoPlane2");
+  const videoPlane3 = meshGLB.getObjectByName("videoPlane3");
   if (video.length > 0) {
-    const videoPlane2 = meshGLB.getObjectByName("videoPlane2");
     const vText = new THREE.VideoTexture(video[0].track);
     const mat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
@@ -269,15 +271,22 @@ const setVideo = (obj) => {
     videoTextures[1].map = vText;
     videoPlane2.material.needUpdate = true;
     videoPlane2.material.id = video[0].id;
+  } else {
+    videoPlane2.material = new THREE.MeshBasicMaterial({
+      color: 0x999999,
+    });
   }
   if (video.length > 1) {
-    const videoPlane3 = meshGLB.getObjectByName("videoPlane3");
     const vText = new THREE.VideoTexture(video[1].track);
     const mat = new THREE.MeshBasicMaterial({ map: vText });
     videoPlane3.material = mat;
     videoTextures[2].map = vText;
     videoPlane3.material.needUpdate = true;
     videoPlane3.material.id = video[1].id;
+  }else {
+    videoPlane3.material = new THREE.MeshBasicMaterial({
+      color: 0x999999,
+    });
   }
   const localVideo1 = document.getElementById("localVideo1");
   if (localVideo1 && videoTextures.length > 0) {

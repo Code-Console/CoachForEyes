@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/RGBELoader.js"></script>
     <script src="https://unpkg.com/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="lib-jitsi-meet.min.js"></script>
+    <script src="https://meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
     <script src="example.js"></script>
     <script src="auditorium.js"></script>
     <script src="Basic.js"></script>
@@ -89,7 +89,9 @@
         onchange="changeAudioOutput(this)"
       ></select>
     </div>
+    <video id="video" style="display:none" autoplay playsinline></video>
     <script>
+      const video = document.getElementById( 'video' );
       window.onload = () => {
         aInit();
       };
@@ -107,7 +109,7 @@
       });
       $("#mute-but").click(() => {
         const audio = localTracks.find((t) => t.getType() === "audio");
-        
+
         if (audio?.isMuted()) {
           audio?.unmute();
           $("#mute-line").css("display", "none");
@@ -120,10 +122,14 @@
       });
       $("#end-but").click(() => {
         console.error(room, "~~~~~room~~~~~~~~~~");
-        room?.leave().then(() => {
-          $("#meeting-ui").css("z-index", "0");
-          $("#meeting-end").css("display", "flex");
-        }).catch(e=>console.error(e,'end-but'));
+        room
+          ?.leave()
+          .then(() => {
+            $("#meeting-ui").css("z-index", "0");
+            $("#meeting-end").css("display", "flex");
+          })
+          .catch((e) => console.error(e, "end-but"));
+        unload();
       });
 
       const getUserMedia = () => {
@@ -131,8 +137,8 @@
           return navigator.mediaDevices
             .getUserMedia({ audio: true, video: true })
             .then(() => ({
-              audio: DevicePermissionStatus.GRANTED,
-              video: DevicePermissionStatus.GRANTED,
+              // audio: DevicePermissionStatus.GRANTED,
+              // video: DevicePermissionStatus.GRANTED,
             }))
             .catch(() => {
               console.log("DEBUG:: Can not get camera permission");
@@ -142,8 +148,8 @@
                   video: false,
                 })
                 .then(() => ({
-                  audio: DevicePermissionStatus.GRANTED,
-                  video: DevicePermissionStatus.REJECTED,
+                  // audio: DevicePermissionStatus.GRANTED,
+                  // video: DevicePermissionStatus.REJECTED,
                 }));
             });
         }
@@ -151,7 +157,30 @@
           new Error("navigator.mediaDevices.getUserMedia is not available")
         );
       };
-      getUserMedia();
+
+      function callVideoPermission() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const constraints = {
+            video: { width: 1280, height: 720, facingMode: "user" },
+          };
+
+          navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(function (stream) {
+              // apply the stream to the video element used in the texture
+
+              video.srcObject = stream;
+              video.play();
+            })
+            .catch(function (error) {
+              console.error("Unable to access the camera/webcam.", error);
+            });
+        } else {
+          console.error("MediaDevices interface not available.");
+        }
+      }
+
+      callVideoPermission();
     </script>
   </body>
 </html>

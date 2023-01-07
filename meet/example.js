@@ -5,7 +5,7 @@ const urlParams = new URLSearchParams(queryString);
 const confID = urlParams.get("meeting");
 
 const conference = confID || "conference";
-const domain = "146.190.118.136";
+const domain = "meet.jit.si";
 const options = {
   hosts: {
     domain: domain,
@@ -82,7 +82,7 @@ function onLocalTracks(tracks) {
  * @param track JitsiTrack object
  */
 function onRemoteTrack(track) {
-  console.log("onRemoteTrack~~~~~", track);
+  console.error("onRemoteTrack~~~~~", track);
   if (track.isLocal()) {
     return;
   }
@@ -92,7 +92,7 @@ function onRemoteTrack(track) {
     remoteTracks[participant] = [];
   }
   const idx = remoteTracks[participant].push(track);
-
+  console.error("onRemoteTrack~~~~~@@~~", remoteTracks);
   track.addEventListener(
     JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
     (audioLevel) => console.log(`Audio Level remote: ${audioLevel}`)
@@ -129,7 +129,7 @@ function onRemoteTrack(track) {
  * That function is executed when the conference is joined
  */
 function onConferenceJoined() {
-  console.log("conference joined!");
+  console.error("conference joined!");
   isJoined = true;
   for (let i = 0; i < localTracks.length; i++) {
     room.addTrack(localTracks[i]);
@@ -141,7 +141,7 @@ function onConferenceJoined() {
  * @param id
  */
 function onUserLeft(id) {
-  console.log("user left");
+  console.error("user left");
   if (!remoteTracks[id]) {
     return;
   }
@@ -150,6 +150,7 @@ function onUserLeft(id) {
   for (let i = 0; i < tracks.length; i++) {
     tracks[i].detach($(`#${id}${tracks[i].getType()}`));
   }
+  setVideo();
 }
 
 /**
@@ -170,7 +171,7 @@ function onConnectionSuccess() {
   });
   room.on(JitsiMeetJS.events.conference.CONFERENCE_JOINED, onConferenceJoined);
   room.on(JitsiMeetJS.events.conference.USER_JOINED, (id) => {
-    console.log("user join");
+    console.error("user join");
     remoteTracks[id] = [];
   });
   room.on(JitsiMeetJS.events.conference.USER_LEFT, onUserLeft);
@@ -188,6 +189,8 @@ function onConnectionSuccess() {
   room.on(JitsiMeetJS.events.conference.PHONE_NUMBER_CHANGED, () =>
     console.log(`${room.getPhoneNumber()} - ${room.getPhonePin()}`)
   );
+  room.setReceiverVideoConstraint(480);
+  room.setSenderVideoConstraint(480);
   console.log("~~~b~~", room);
   room.join();
 }
