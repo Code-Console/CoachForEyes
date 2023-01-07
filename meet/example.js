@@ -60,7 +60,9 @@ function onLocalTracks(tracks) {
         console.log(`track audio output device was changed to ${deviceId}`)
     );
     if (localTracks[i].getType() === "video") {
-      $("#video-ele").append(`<video autoplay='1' id='localVideo${i}' class='video-back'/>`);
+      $("#video-ele").append(
+        `<video autoplay='1' id='localVideo${i}' class='video-back'/>`
+      );
       localTracks[i].attach($(`#localVideo${i}`)[0]);
     } else {
       $("#video-ele").append(
@@ -189,10 +191,15 @@ function onConnectionSuccess() {
   room.on(JitsiMeetJS.events.conference.PHONE_NUMBER_CHANGED, () =>
     console.log(`${room.getPhoneNumber()} - ${room.getPhonePin()}`)
   );
+  room.on(
+    JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED,
+    onEndpointMessage
+  );
+
   room.setReceiverVideoConstraint(480);
   room.setSenderVideoConstraint(480);
-  console.log("~~~b~~", room);
   room.join();
+  room.setDisplayName("user-" + Math.floor(Math.random() * 1000));
 }
 
 /**
@@ -259,16 +266,16 @@ function switchVideo() {
       localTracks.push(tracks[0]);
       localTracks[1].addEventListener(
         JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
-        () => console.log("local track muted")
+        () => console.error("local track muted")
       );
       localTracks[1].addEventListener(
         JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
-        () => console.log("local track stoped")
+        () => switchVideo()
       );
       localTracks[1].attach($("#localVideo1")[0]);
       room.addTrack(localTracks[1]);
     })
-    .catch((error) => console.log(error));
+    .catch((error) => switchVideo());
 }
 
 /**
@@ -338,4 +345,26 @@ const initJitsi = () => {
       }
     });
   }
+};
+const sendMessage = () => {
+  const msgStr = $("#msg-txt").val();
+  $("#msg-txt").val("");
+  console.error("room ", msgStr);
+  if (msgStr?.trim().length > 0) {
+    room.sendEndpointMessage("", {
+      msg: msgStr,
+    });
+    for (let i = 0; i < 10; i++) {
+      setMsgElement("you", msgStr);
+    }
+    // $("html, body").animate({ scrollTop: $("#chatPanel").scrollTop() }, 1000);
+    var $target = $("#chatPanel");
+    $target.animate({ scrollTop: $target.height() }, 1000);
+  }
+};
+const onEndpointMessage = (sender, payload) => {
+  setMsgElement(sender?._displayName, payload.msg);
+};
+const setMsgElement = (name, msg) => {
+  $("#chatMessages").append(`<p class="chat-message">💻${name}:${msg}</p>`);
 };
