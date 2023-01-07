@@ -355,8 +355,6 @@ const sendMessage = () => {
       msg: msgStr,
     });
     setMsgElement("you", msgStr);
-    var $target = $("#chatPanel");
-    $target.animate({ scrollTop: $target.height() }, 1000);
   }
 };
 const onEndpointMessage = (sender, payload) => {
@@ -364,4 +362,6 @@ const onEndpointMessage = (sender, payload) => {
 };
 const setMsgElement = (name, msg) => {
   $("#chatMessages").append(`<p class="chat-message">💻${name}:${msg}</p>`);
+  const $target = $("#chatPanel");
+  $target.animate({ scrollTop: $target.height() }, 1000);
 };

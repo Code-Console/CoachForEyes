@@ -118,11 +118,14 @@ svg {
 }
 .msg-input {
   background: transparent;
-  border: 1px solid #777;
+  border: 1px solid #fff;
   min-width: 250px;
   height: 30px;
   color: white;
   padding: 0 8px;
+}
+.msg-input::placeholder{
+  color: #fff7;
 }
 #send-but {
   width: 32px;
