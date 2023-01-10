@@ -5,7 +5,7 @@ const urlParams = new URLSearchParams(queryString);
 const confID = urlParams.get("meeting");
 
 const conference = confID || "conference";
-const domain = "meet.jit.si";
+const domain = "iftradi.com";//"meet.jit.si";
 const options = {
   hosts: {
     domain: domain,
