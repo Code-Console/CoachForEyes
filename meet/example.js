@@ -23,7 +23,7 @@ const options = {
   useStunTurn: true,
   bosh: `https://${domain}/http-bind?room=liveroom`,
   websocket: `wss://${domain}/xmpp-websocket`,
-  clientNode: "http://jitsi.org/jitsimeet",
+  clientNode: "https://jitsi.org/jitsimeet",
 };
 console.error("options", options);
 const confOptions = {};
