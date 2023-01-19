@@ -81,5 +81,20 @@ const init = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
   window.addEventListener("resize", onWindowResize, false);
+
+  fetch("https://api.mockaroo.com/api/59d7cdf0?count=1&key=d89be5e0")
+    .then((response) => response.json())
+    .then((data) => {
+      const textureLoader = new THREE.TextureLoader(manager);
+      console.log(data);
+      console.log(data[0].items[0]);
+      const tileTex = textureLoader.load(data[0].items[0].image_address);
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(10, 10, 10),
+        new THREE.MeshBasicMaterial({ map: tileTex })
+      );
+      scene.add(mesh);
+    });
+
   animate();
 };
