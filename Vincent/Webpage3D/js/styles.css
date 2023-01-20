@@ -49,3 +49,9 @@ img {
   position: fixed;
   right: 0;
 }
+@media (max-width: 680px) {
+  .progress {
+    height: 30px;
+    width: 350px;
+  }
+}

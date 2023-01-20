@@ -9,8 +9,8 @@ let controls;
 let tileTex;
 let json;
 let textureLoader;
-const onSelect = (url) => {
-  console.log(url);
+const onSelect = (url,id) => {
+  console.log(url,id);
   const meshFloorHall = billboardGLB.getObjectByName("Object_6");
   const tileTex = textureLoader.load(url);
   if (meshFloorHall && tileTex) {
@@ -27,7 +27,11 @@ const updateLoadingBar = () => {
     for (let i = 0; i < items?.length; i++) {
       const img = document.createElement("img");
       img.setAttribute("src", items[i].image_address);
-      img.setAttribute("onclick", `onSelect('${items[i].image_address}')`);
+      img.setAttribute(
+        "onclick",
+        `onSelect('${items[i].image_address}','img-${i}')`
+      );
+      img.setAttribute("id", `img-${i}`);
       imgCont.appendChild(img);
     }
   }
